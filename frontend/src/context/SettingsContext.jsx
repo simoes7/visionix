@@ -3,6 +3,14 @@ import api from '../services/api';
 
 const SettingsContext = createContext(null);
 
+const BACKEND_URL = (api.defaults.baseURL || '').replace('/api', '');
+
+const getImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+  return `${BACKEND_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
 export const SettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState({
     site_name: 'VISIONIX',
@@ -14,7 +22,6 @@ export const SettingsProvider = ({ children }) => {
     contact_address: '',
     currency: 'USD',
     tax_rate: '0.00',
-    maintenance_mode: false,
     low_stock_threshold: 10,
     enable_reviews: true,
     enable_wishlist: true,
@@ -40,10 +47,35 @@ export const SettingsProvider = ({ children }) => {
     fetchSettings();
   }, []);
 
+  // Sync document title and favicon with site settings
+  useEffect(() => {
+    if (!settings) return;
+    const titleParts = [];
+    if (settings.site_name) titleParts.push(settings.site_name);
+    if (settings.site_tagline) titleParts.push(settings.site_tagline);
+    if (titleParts.length > 0) document.title = titleParts.join(' | ');
+
+    const setFavicon = (href) => {
+      let link = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = href || '/favicon.svg';
+    };
+
+    if (settings.logo_type === 'image' && settings.site_logo_url) {
+      setFavicon(getImageUrl(settings.site_logo_url));
+    } else {
+      setFavicon('/favicon.svg');
+    }
+  }, [settings]);
+
   const refreshSettings = () => fetchSettings();
 
   return (
-    <SettingsContext.Provider value={{ settings, loading, refreshSettings }}>
+    <SettingsContext.Provider value={{ settings, loading, refreshSettings, getImageUrl }}>
       {children}
     </SettingsContext.Provider>
   );

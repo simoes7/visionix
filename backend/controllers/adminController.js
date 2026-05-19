@@ -272,7 +272,6 @@ export const getSettings = async (req, res) => {
         storeAddress: '',
         currency: 'USD',
         taxRate: 0,
-        maintenanceMode: false,
         lowStockThreshold: 10,
         enableReviews: true,
         enableWishlist: true
@@ -297,7 +296,6 @@ export const updateSettings = async (req, res) => {
       storeAddress,
       currency,
       taxRate,
-      maintenanceMode,
       lowStockThreshold,
       enableReviews,
       enableWishlist
@@ -309,8 +307,8 @@ export const updateSettings = async (req, res) => {
     if (existing.length === 0) {
       // Insert new settings
       await pool.query(
-        `INSERT INTO settings (id, store_name, store_email, store_phone, store_address, currency, tax_rate, maintenance_mode, low_stock_threshold, enable_reviews, enable_wishlist)
-         VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO settings (id, store_name, store_email, store_phone, store_address, currency, tax_rate, low_stock_threshold, enable_reviews, enable_wishlist)
+         VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           storeName,
           storeEmail,
@@ -318,7 +316,6 @@ export const updateSettings = async (req, res) => {
           storeAddress,
           currency,
           taxRate,
-          maintenanceMode ? 1 : 0,
           lowStockThreshold,
           enableReviews ? 1 : 0,
           enableWishlist ? 1 : 0
@@ -329,7 +326,7 @@ export const updateSettings = async (req, res) => {
       await pool.query(
         `UPDATE settings 
          SET store_name = ?, store_email = ?, store_phone = ?, store_address = ?, 
-             currency = ?, tax_rate = ?, maintenance_mode = ?, low_stock_threshold = ?, 
+             currency = ?, tax_rate = ?, low_stock_threshold = ?, 
              enable_reviews = ?, enable_wishlist = ?
          WHERE id = 1`,
         [
@@ -339,7 +336,6 @@ export const updateSettings = async (req, res) => {
           storeAddress,
           currency,
           taxRate,
-          maintenanceMode ? 1 : 0,
           lowStockThreshold,
           enableReviews ? 1 : 0,
           enableWishlist ? 1 : 0

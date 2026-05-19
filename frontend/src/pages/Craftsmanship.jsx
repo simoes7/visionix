@@ -1,6 +1,33 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../services/api';
 
 const Craftsmanship = () => {
+  const [pageContent, setPageContent] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  // Dynamically resolve backend host for images
+  const BACKEND_URL = (api.defaults.baseURL || '').replace('/api', '');
+  const resolveImage = (url) => {
+    if (!url) return '';
+    return url.startsWith('/') ? `${BACKEND_URL}${url}` : url;
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get('/content/about');
+        setPageContent(res.data || {});
+      } catch (err) {
+        console.error("Error fetching about content:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <main className="pt-20">
       {/* Hero Section */}
@@ -8,12 +35,16 @@ const Craftsmanship = () => {
         <div className="absolute inset-0 bg-black/40 z-10"></div>
         <img 
           className="w-full h-full object-cover transition-transform duration-1000 ease-out hover:scale-105" 
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9MXwEWqfGaAMBJxUuR2FQo6VgS6BalmHoQJrvIpWLAlyaOCfZUHreI_0MnvowezSosuI2XFOS2TdpvQkDgU8Cxr-UUlhKc1Foq75yA9Eu890glY69p-7jtorr2RQRHg5vt8gUJzLaR2-CKS5Qw2z1fikN638bu4Tde2AeuLRJnitmHySDbSC7uIEDqQQThZBoT0RDTTlVdPieu1iyCv4_aX4-tlUVhAjRFJiGpnObn_vWvP57OLwqO8urN_mCP5VevCbf85qXukWt" 
+          src={resolveImage(pageContent.hero_image) || "https://lh3.googleusercontent.com/aida-public/AB6AXuB9MXwEWqfGaAMBJxUuR2FQo6VgS6BalmHoQJrvIpWLAlyaOCfZUHreI_0MnvowezSosuI2XFOS2TdpvQkDgU8Cxr-UUlhKc1Foq75yA9Eu890glY69p-7jtorr2RQRHg5vt8gUJzLaR2-CKS5Qw2z1fikN638bu4Tde2AeuLRJnitmHySDbSC7uIEDqQQThZBoT0RDTTlVdPieu1iyCv4_aX4-tlUVhAjRFJiGpnObn_vWvP57OLwqO8urN_mCP5VevCbf85qXukWt"} 
           alt="Master optician crafting eyewear"
         />
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-gutter">
-          <span className="font-label-caps text-label-caps text-primary mb-6 tracking-[0.3em] uppercase">CRAFTING VISION</span>
-          <h1 className="font-display-lg text-[48px] md:text-[100px] text-white max-w-4xl mx-auto italic leading-[1] tracking-tight">Architectural precision in every curve.</h1>
+          <span className="font-label-caps text-label-caps text-primary mb-6 tracking-[0.3em] uppercase">
+            {pageContent.hero_label || "CRAFTING VISION"}
+          </span>
+          <h1 className="font-display-lg text-[48px] md:text-[100px] text-white max-w-4xl mx-auto italic leading-[1] tracking-tight">
+            {pageContent.hero_title || "Architectural precision in every curve."}
+          </h1>
         </div>
       </section>
 
@@ -24,15 +55,15 @@ const Craftsmanship = () => {
             <div className="md:col-span-5 mb-12 md:mb-0">
               <h2 className="font-label-caps text-label-caps text-primary tracking-widest mb-8 uppercase">OUR PHILOSOPHY</h2>
               <p className="font-headline-md text-headline-md text-on-surface leading-tight">
-                We believe eyewear is the most intimate form of architecture—a bridge between the soul and the world.
+                {pageContent.philosophy_title || "We believe eyewear is the most intimate form of architecture—a bridge between the soul and the world."}
               </p>
             </div>
             <div className="md:col-span-6 md:col-start-7">
               <p className="font-body-lg text-body-lg text-on-surface-variant mb-6">
-                Visionix was founded on the principle that technical excellence shouldn't compromise aesthetic purity. We strip away the unnecessary until only the essential remains: perfect balance, weightless comfort, and crystalline clarity.
+                {pageContent.philosophy_text_1 || "Visionix was founded on the principle that technical excellence shouldn't compromise aesthetic purity. We strip away the unnecessary until only the essential remains: perfect balance, weightless comfort, and crystalline clarity."}
               </p>
               <p className="font-body-md text-body-md text-on-surface-variant">
-                Every pair of frames is a testament to the dialogue between heritage techniques and futuristic materials, designed for those who see beyond the surface.
+                {pageContent.philosophy_text_2 || "Every pair of frames is a testament to the dialogue between heritage techniques and futuristic materials, designed for those who see beyond the surface."}
               </p>
             </div>
           </div>
@@ -120,7 +151,9 @@ const Craftsmanship = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="font-label-caps text-label-caps text-primary mb-8 tracking-widest uppercase">SUSTAINABILITY</h2>
-              <h3 className="font-display-lg text-headline-md md:text-display-lg-mobile text-white mb-8">Circular by design, ethical by nature.</h3>
+              <h3 className="font-display-lg text-headline-md md:text-display-lg-mobile text-white mb-8">
+                {pageContent.sustainability_title || "Circular by design, ethical by nature."}
+              </h3>
               <div className="space-y-8">
                 <div className="flex items-start space-x-6">
                   <span className="material-symbols-outlined text-primary">eco</span>
@@ -141,7 +174,7 @@ const Craftsmanship = () => {
             <div className="relative group">
               <img 
                 className="w-full aspect-[4/5] object-cover border border-white/10 grayscale hover:grayscale-0 transition-all duration-1000" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhblT6IzvLiJMWBpqllzjrr8KEDB4cmkeIpHar8nbvcWAvOiTUIYj9BnuJrTRswIsrqKj2dNTr59x81M2gCCbHNlnKiYUaNDFgbFyiKQgfEFXIl7i65p-8zZqGqC1lmFHCCncqgpJxUr-bJffztbJXmcm_UwKU3fCgs4huhqdrYykU6StqFM1lFICurseWAqOhdLU0slNKyiVZeFSC5Zx-2m4mpULvi1NasKqAoRZF898gBMeE1-vpYjJZfnu_MFstNgGUjYCW6WQx" 
+                src={resolveImage(pageContent.sustainability_image) || "https://lh3.googleusercontent.com/aida-public/AB6AXuDhblT6IzvLiJMWBpqllzjrr8KEDB4cmkeIpHar8nbvcWAvOiTUIYj9BnuJrTRswIsrqKj2dNTr59x81M2gCCbHNlnKiYUaNDFgbFyiKQgfEFXIl7i65p-8zZqGqC1lmFHCCncqgpJxUr-bJffztbJXmcm_UwKU3fCgs4huhqdrYykU6StqFM1lFICurseWAqOhdLU0slNKyiVZeFSC5Zx-2m4mpULvi1NasKqAoRZF898gBMeE1-vpYjJZfnu_MFstNgGUjYCW6WQx"} 
                 alt="Sustainable packaging"
               />
             </div>

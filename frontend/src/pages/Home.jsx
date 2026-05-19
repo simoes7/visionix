@@ -13,6 +13,7 @@ const Home = () => {
   const currency = settings.currency || 'USD';
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pageContent, setPageContent] = useState({});
 
   // Dynamically resolve backend host for images
   const BACKEND_URL = (api.defaults.baseURL || '').replace('/api', '');
@@ -22,18 +23,22 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/products?limit=4');
-        console.log("Products fetched successfully:", response.data.products);
-        setProducts(response.data.products || []);
+        setLoading(true);
+        const [prodRes, contentRes] = await Promise.all([
+          api.get('/products?limit=4'),
+          api.get('/content/home')
+        ]);
+        setProducts(prodRes.data.products || []);
+        setPageContent(contentRes.data || {});
       } catch (err) {
-        console.error("Error fetching products:", err);
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchProducts();
+    fetchData();
   }, []);
 
   return (
@@ -44,16 +49,15 @@ const Home = () => {
           <img
             alt=""
             className="w-full h-full object-cover brightness-50 animate-image-reveal"
-            data-alt="A cinematic close-up of avant-garde architectural eyeglasses..."
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwX1CmMaN9fo8f0tvzJA4nOSHr155gHaX9GtUfYh2R0AV_dU_do-FoN4eBb4tT-HmaDKNb6_BwybPJvHWWiAbxNxjT3LWFlfkla7pqPrXBLZyP2Aej3mk9uhOp94g7XqM7k10hpNUOBJ5igTFsqAU-Tl9sNUqK30YipDoA0TqJooIQNo1SHUyKoWrkmNm0EvQvOQyjs8ZUkqknzHpULEeOZ4aeJox5PVc6bw9sAjGkyU9tr02Z7qyNfiVrmawuyqN84KaSdgtBxw_r"
+            src={resolveImage(pageContent.hero_image) || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAwX1CmMaN9fo8f0tvzJA4nOSHr155gHaX9GtUfYh2R0AV_dU_do-FoN4eBb4tT-HmaDKNb6_BwybPJvHWWiAbxNxjT3LWFlfkla7pqPrXBLZyP2Aej3mk9uhOp94g7XqM7k10hpNUOBJ5igTFsqAU-Tl9sNUqK30YipDoA0TqJooIQNo1SHUyKoWrkmNm0EvQvOQyjs8ZUkqknzHpULEeOZ4aeJox5PVc6bw9sAjGkyU9tr02Z7qyNfiVrmawuyqN84KaSdgtBxw_r'}
           />
         </div>
         <div className="relative z-10 text-center px-gutter">
           <p className="font-label-caps text-label-caps tracking-[0.4em] mb-6 text-primary uppercase animate-in fade-in slide-in-from-bottom-4 duration-1000">
-            {settings.site_tagline || 'THE NEW ARCHITECTURE'}
+            {pageContent.hero_label || settings.site_tagline || 'THE NEW ARCHITECTURE'}
           </p>
           <h1 className="font-display-lg text-[48px] md:text-[80px] text-on-surface mb-10 max-w-4xl mx-auto leading-tight">
-            Sculpted Vision for the Modern Vanguard.
+            {pageContent.hero_title || 'Sculpted Vision for the Modern Vanguard.'}
           </h1>
           <Link
             to="/shop"
@@ -199,13 +203,13 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ... (rest of sections) ... */}
+      {/* Future Vision & AI Try-On */}
       <section className="py-24 px-gutter max-w-container-max mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border border-white/10 overflow-hidden">
           <div className="bg-surface-container-high p-16 flex flex-col justify-center">
-            <p className="font-label-caps text-label-caps text-primary mb-6">FUTURE VISION</p>
-            <h2 className="font-display-lg text-display-lg-mobile md:text-headline-md mb-8 uppercase">AI Mirror: Virtual Fitting Reimagined</h2>
-            <p className="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-md">Experience our collections in high-fidelity 3D. Our proprietary AI Virtual Try-On maps your unique facial architecture with sub-millimeter precision.</p>
+            <p className="font-label-caps text-label-caps text-primary mb-6">{pageContent.future_vision_label || 'FUTURE VISION'}</p>
+            <h2 className="font-display-lg text-display-lg-mobile md:text-headline-md mb-8 uppercase">{pageContent.future_vision_title || 'AI Mirror: Virtual Fitting Reimagined'}</h2>
+            <p className="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-md">{pageContent.future_vision_description || 'Experience our collections in high-fidelity 3D. Our proprietary AI Virtual Try-On maps your unique facial architecture with sub-millimeter precision.'}</p>
             <div className="flex gap-6">
               <Link to="/try-on" className="bg-on-surface text-background px-8 py-4 font-label-caps text-label-caps hover:opacity-80 transition-opacity uppercase tracking-widest text-center">LAUNCH VIRTUAL MIRROR</Link>
             </div>
@@ -213,22 +217,23 @@ const Home = () => {
           <div className="relative min-h-[400px]">
             <img
               alt=""
-              className="absolute inset-0 w-full h-full object-cover grayscale"
-              data-alt="A clean, futuristic display..."
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmj1nULSJc7xFX_ROKH7AecgqNk6Dor1pzpugsM7N3M6PqFxVA8YhaGs2ryYolC258VEYCLXpdDhp2ZmFti-cgU6r5GkAplFTO5AIlO5CkhUvwAL8QCKIWZjwI4C-HwzLAS5xOuNT9ZDnHIxR531moS53KafPUBGPbChSgYzN0_KZo8d8SFrVajwNVoAkGEv8nC9aM0dUUEUtzsrTd_32TtyM-XOzgfyoGSrY-ZqugHq0QxKZorFsCVxl7Lqa9423F5MfqilcKpZWJ"
+              className="absolute inset-0 w-full h-full object-cover grayscale animate-image-reveal"
+              src={resolveImage(pageContent.future_vision_image) || "https://lh3.googleusercontent.com/aida-public/AB6AXuBmj1nULSJc7xFX_ROKH7AecgqNk6Dor1pzpugsM7N3M6PqFxVA8YhaGs2ryYolC258VEYCLXpdDhp2ZmFti-cgU6r5GkAplFTO5AIlO5CkhUvwAL8QCKIWZjwI4C-HwzLAS5xOuNT9ZDnHIxR531moS53KafPUBGPbChSgYzN0_KZo8d8SFrVajwNVoAkGEv8nC9aM0dUUEUtzsrTd_32TtyM-XOzgfyoGSrY-ZqugHq0QxKZorFsCVxl7Lqa9423F5MfqilcKpZWJ"}
             />
           </div>
         </div>
       </section>
 
+      {/* Testimonial Quote */}
       <section className="py-32 bg-background border-y border-white/5">
         <div className="px-gutter max-w-3xl mx-auto text-center">
           <span className="material-symbols-outlined text-primary text-[48px] mb-8" style={{ fontVariationSettings: "'FILL' 1" }}>format_quote</span>
-          <p className="font-display-lg text-headline-md md:text-[40px] italic leading-tight mb-12">"Visionix isn't just eyewear; it's a piece of architectural engineering for the face. The precision and weightlessness are unparalleled."</p>
-          <p className="font-label-caps text-label-caps tracking-widest text-primary">MARCUS CHEN — ARCHITECTURAL LEAD, GENESIS FIRM</p>
+          <p className="font-display-lg text-headline-md md:text-[40px] italic leading-tight mb-12">{pageContent.quote_text || `"Visionix isn't just eyewear; it's a piece of architectural engineering for the face. The precision and weightlessness are unparalleled."`}</p>
+          <p className="font-label-caps text-label-caps tracking-widest text-primary">{pageContent.quote_author || 'MARCUS CHEN — ARCHITECTURAL LEAD, GENESIS FIRM'}</p>
         </div>
       </section>
 
+      {/* Private Access Newsletter */}
       <section className="py-24 px-gutter max-w-container-max mx-auto text-center">
         <div className="max-w-xl mx-auto">
           <h2 className="font-headline-md text-on-surface mb-6">Private Access</h2>

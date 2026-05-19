@@ -5,6 +5,15 @@ import { useWishlist } from '../../context/WishlistContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useState } from 'react';
+import api from '../../services/api';
+
+const BACKEND_URL = (api.defaults.baseURL || '').replace('/api', '');
+
+const getImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+  return `${BACKEND_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+};
 
 const Navbar = () => {
   const { isAuthenticated, isAdmin, logout } = useAuth();
@@ -16,6 +25,9 @@ const Navbar = () => {
   const queryParams = new URLSearchParams(location.search);
   const currentCategory = queryParams.get('category');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const safeWishlistItems = Array.isArray(wishlistItems) ? wishlistItems.filter(p => p && p.id) : [];
+  const safeCartItems = Array.isArray(cartItems) ? cartItems.filter(p => p && p.id) : [];
 
   const isActive = (path, category = null) => {
     if (category) {
@@ -39,7 +51,7 @@ const Navbar = () => {
         <div className="flex items-center gap-12">
           <Link to="/" className="group">
             {settings.logo_type === 'image' && settings.site_logo_url ? (
-              <img src={settings.site_logo_url} alt={settings.site_name || 'Logo'} className="h-9 w-auto object-contain transition-transform duration-500 group-hover:scale-105" />
+              <img src={getImageUrl(settings.site_logo_url)} alt={settings.site_name || 'Logo'} className="h-9 w-auto object-contain transition-transform duration-500 group-hover:scale-105" />
             ) : (
               <div className="flex flex-col">
                 <span className="text-headline-sm font-display-lg tracking-tighter text-on-surface uppercase transition-colors duration-300 group-hover:text-primary">
@@ -84,28 +96,21 @@ const Navbar = () => {
           </button>
           
           <div className="flex items-center gap-4">
-            {isAuthenticated ? (
+            {isAuthenticated && (
               <>
-                <Link to="/profile" className={`hover:opacity-80 transition-opacity duration-300 ${isActive('/profile') ? 'text-primary' : ''}`}>
-                  <span className="material-symbols-outlined text-[24px]">person</span>
-                </Link>
                 {isAdmin && (
                   <Link to="/admin" className="hidden md:block font-label-caps text-[10px] text-primary">ADMIN</Link>
                 )}
-                <button onClick={logout} className="hover:opacity-80 transition-opacity duration-300">
+                <button onClick={logout} className="hover:opacity-80 transition-opacity duration-300" title="Sign Out">
                   <span className="material-symbols-outlined text-[24px]">logout</span>
                 </button>
               </>
-            ) : (
-              <Link to="/login" className={`hover:opacity-80 transition-opacity duration-300 ${isActive('/login') ? 'text-primary' : ''}`}>
-                <span className="material-symbols-outlined text-[24px]">person</span>
-              </Link>
             )}
             
             {/* Wishlist Link */}
-            <Link to="/profile?tab=wishlist" className={`hover:opacity-80 transition-opacity duration-300 relative ${isActive('/profile') && location.search.includes('tab=wishlist') ? 'text-primary' : ''}`}>
-              <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: wishlistItems.length > 0 ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
-              {wishlistItems.length > 0 && (
+            <Link to="/profile" className={`hover:opacity-80 transition-opacity duration-300 relative ${isActive('/profile') ? 'text-primary' : ''}`} title="Wishlist">
+              <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: safeWishlistItems.length > 0 ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+              {safeWishlistItems.length > 0 && (
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
               )}
             </Link>
@@ -113,10 +118,16 @@ const Navbar = () => {
 
           <Link to="/cart" className={`hover:opacity-80 transition-opacity duration-300 relative ${isActive('/cart') ? 'text-primary' : ''}`}>
             <span className="material-symbols-outlined text-[24px]">shopping_bag</span>
-            {cartItems.length > 0 && (
+            {safeCartItems.length > 0 && (
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
             )}
           </Link>
+
+          {!isAuthenticated && (
+            <Link to="/login" className="font-label-caps text-[11px] tracking-[0.2em] font-semibold text-on-surface/85 hover:text-primary transition-colors ml-2">
+              LOGIN
+            </Link>
+          )}
         </div>
       </nav>
 

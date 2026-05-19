@@ -8,7 +8,9 @@ export const WishlistProvider = ({ children }) => {
   const [wishlistItems, setWishlistItems] = useState(() => {
     try {
       const savedWishlist = localStorage.getItem('wishlist');
-      return savedWishlist ? JSON.parse(savedWishlist) : [];
+      if (!savedWishlist) return [];
+      const parsed = JSON.parse(savedWishlist);
+      return Array.isArray(parsed) ? parsed.filter(item => item && typeof item === 'object') : [];
     } catch (e) {
       console.error("Failed to load wishlist from localStorage:", e);
       return [];

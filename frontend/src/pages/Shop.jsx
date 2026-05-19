@@ -64,6 +64,12 @@ const Shop = () => {
     return url.startsWith('/') ? `${BACKEND_URL}${url}` : url;
   };
 
+  const canTryOn = (categoryName) => {
+    if (!categoryName) return false;
+    const name = categoryName.toLowerCase();
+    return name.includes('sunglasses') || name.includes('optical');
+  };
+
   // Local state for immediate UI feedback
   const [localSearch, setLocalSearch] = useState(search);
   const [localMin, setLocalMin] = useState(minPrice);
@@ -435,15 +441,17 @@ const Shop = () => {
                                 >
                                   Quick Add
                                 </button>
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/try-on/${p.id}`);
-                                  }} 
-                                  className="bg-white/10 backdrop-blur-md text-white border border-white/30 px-8 py-3 font-label-caps text-[10px] tracking-[0.2em] uppercase hover:bg-white hover:text-black transition-all min-w-[140px] text-center"
-                                >
-                                  Virtual Try-On
-                                </button>
+                                {canTryOn(p.category_name) && (
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate(`/try-on/${p.id}`);
+                                    }} 
+                                    className="bg-white/10 backdrop-blur-md text-white border border-white/30 px-8 py-3 font-label-caps text-[10px] tracking-[0.2em] uppercase hover:bg-white hover:text-black transition-all min-w-[140px] text-center"
+                                  >
+                                    Virtual Try-On
+                                  </button>
+                                )}
                               </div>
                             </div>
                             <div className="flex flex-col gap-2">
@@ -511,15 +519,17 @@ const Shop = () => {
                             >
                               Quick Add
                             </button>
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/try-on/${p.id}`);
-                              }} 
-                              className="bg-white/10 backdrop-blur-md text-white border border-white/30 px-10 py-4 font-label-caps text-[10px] tracking-[0.2em] uppercase hover:bg-white hover:text-black transition-all min-w-[180px] text-center"
-                            >
-                              Virtual Try-On
-                            </button>
+                            {canTryOn(p.category_name) && (
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/try-on/${p.id}`);
+                                }} 
+                                className="bg-white/10 backdrop-blur-md text-white border border-white/30 px-10 py-4 font-label-caps text-[10px] tracking-[0.2em] uppercase hover:bg-white hover:text-black transition-all min-w-[180px] text-center"
+                              >
+                                Virtual Try-On
+                              </button>
+                            )}
                           </div>
                         </div>
                         <div className="flex flex-col gap-2">

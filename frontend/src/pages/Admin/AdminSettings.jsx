@@ -3,6 +3,14 @@ import api from '../../services/api';
 import { useAlert } from '../../context/AlertContext';
 import { useSettings } from '../../context/SettingsContext';
 
+const BACKEND_URL = (api.defaults.baseURL || '').replace('/api', '');
+
+const getImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+  return `${BACKEND_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
 const AdminSettings = () => {
   const { showAlert } = useAlert();
   const { refreshSettings } = useSettings();
@@ -16,7 +24,6 @@ const AdminSettings = () => {
     whatsapp_number: '',
     contact_address: '',
     tax_rate: '0.00',
-    maintenance_mode: false,
     low_stock_threshold: 10,
     enable_reviews: true,
     enable_wishlist: true,
@@ -55,23 +62,37 @@ const AdminSettings = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Client-side validation to match backend limits and provide instant feedback
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      showAlert('Unsupported file format. Use JPEG, PNG, or WEBP.', 'error');
+      return;
+    }
+    const maxSize = 5 * 1024 * 1024; // 5MB - must match backend limit
+    if (file.size > maxSize) {
+      showAlert('File too large. Maximum allowed size is 5MB.', 'error');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('images', file);
 
     try {
       setLogoUploading(true);
-      const response = await api.post('/admin/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      // Let axios set the Content-Type (including boundary). Manually setting it can break multipart uploads.
+      const response = await api.post('/admin/upload', formData);
 
       const imageUrl = response.data?.imageUrls?.[0];
       if (imageUrl) {
         setSettings(prev => ({ ...prev, site_logo_url: imageUrl, logo_type: 'image' }));
         showAlert('Logo uploaded successfully.', 'success');
+      } else {
+        console.error('Unexpected upload response:', response);
+        showAlert('Upload completed but no image URL returned.', 'warning');
       }
     } catch (err) {
-      console.error('Logo upload failed:', err);
-      showAlert('Logo upload failed.', 'error');
+      console.error('Logo upload failed:', err?.response?.data || err);
+      showAlert(err?.response?.data?.message || 'Logo upload failed.', 'error');
     } finally {
       setLogoUploading(false);
     }
@@ -158,7 +179,7 @@ const AdminSettings = () => {
                   <div className="space-y-3">
                     <div className="text-[10px] text-outline uppercase tracking-widest">Logo Preview</div>
                     <div className="flex items-center gap-4">
-                      <img src={settings.site_logo_url} alt="Logo preview" className="h-14 object-contain rounded-sm border border-white/10 bg-surface-container-low" />
+                      <img src={getImageUrl(settings.site_logo_url)} alt="Logo preview" className="h-14 object-contain rounded-sm border border-white/10 bg-surface-container-low" />
                       <button type="button" onClick={handleRemoveLogo} className="px-4 py-2 border border-error/30 text-error uppercase text-[10px] tracking-[0.2em] rounded-sm hover:bg-error/10 transition-all">Remove</button>
                     </div>
                   </div>

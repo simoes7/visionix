@@ -69,11 +69,6 @@ const LayoutWrapper = ({ children }) => {
 
   return (
     <>
-      {!isFullPage && settings.maintenance_mode && (
-        <div className="w-full bg-yellow-400 text-black px-gutter py-3 text-center font-label-caps text-[10px] uppercase tracking-[0.3em]">
-          The site is currently in maintenance mode. Public changes will be temporarily paused.
-        </div>
-      )}
       {!isFullPage && <Navbar />}
       {children}
       {!isFullPage && <Footer />}

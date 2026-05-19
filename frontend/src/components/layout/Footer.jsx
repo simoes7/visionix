@@ -1,5 +1,14 @@
 import { Link } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
+import api from '../../services/api';
+
+const BACKEND_URL = (api.defaults.baseURL || '').replace('/api', '');
+
+const getImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+  return `${BACKEND_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+};
 
 const Footer = () => {
   const { settings } = useSettings();
@@ -12,7 +21,7 @@ const Footer = () => {
           <div className="space-y-6">
             <div className="flex items-center gap-4">
               {settings.logo_type === 'image' && settings.site_logo_url ? (
-                <img src={settings.site_logo_url} alt={settings.site_name || 'Logo'} className="h-10 object-contain brightness-0 invert" />
+                <img src={getImageUrl(settings.site_logo_url)} alt={settings.site_name || 'Logo'} className="h-10 object-contain brightness-0 invert" />
               ) : (
                 <h2 className="font-display-lg text-headline-md text-on-surface uppercase tracking-tighter">{settings.site_name}</h2>
               )}

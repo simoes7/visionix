@@ -55,6 +55,27 @@ const ProductDetails = () => {
           : (primaryColor.name || primaryColor.hex || 'Standard');
         setSelectedColor(initialColor);
       }
+
+      // Add to recently viewed in localStorage
+      try {
+        const recentList = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+        const filtered = recentList.filter(item => item.id !== product.id);
+        const updated = [
+          {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image_url: product.image_url,
+            category_name: product.category_name,
+            frame_style: product.frame_style,
+            material: product.material
+          },
+          ...filtered
+        ].slice(0, 4);
+        localStorage.setItem('recentlyViewed', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to update recently viewed:', e);
+      }
     }
   }, [loading, product]);
 
@@ -232,13 +253,15 @@ const ProductDetails = () => {
                 </span>
               </button>
             </div>
-            <Link 
-              to={`/try-on/${product.id}`}
-              className="w-full border border-white/15 py-6 font-label-caps text-label-caps flex items-center justify-center gap-3 hover:bg-white/5 transition-all duration-300 uppercase tracking-widest"
-            >
-              <span className="material-symbols-outlined text-lg">videocam</span>
-              Virtual Try-On
-            </Link>
+            {product.category_name && (product.category_name.toLowerCase().includes('sunglasses') || product.category_name.toLowerCase().includes('optical')) && (
+              <Link 
+                to={`/try-on/${product.id}`}
+                className="w-full border border-white/15 py-6 font-label-caps text-label-caps flex items-center justify-center gap-3 hover:bg-white/5 transition-all duration-300 uppercase tracking-widest"
+              >
+                <span className="material-symbols-outlined text-lg">videocam</span>
+                Virtual Try-On
+              </Link>
+            )}
           </div>
 
           <div className="border-t border-white/10">

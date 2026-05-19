@@ -288,7 +288,12 @@ const VirtualTryOn = () => {
     const fetchProducts = async () => {
       try {
         const { data } = await api.get('/products?limit=50');
-        const list      = data.products || [];
+        // Filter list to only sunglasses and optical categories
+        const list      = (data.products || []).filter(p => {
+          if (!p.category_name) return false;
+          const cat = p.category_name.toLowerCase();
+          return cat.includes('sunglasses') || cat.includes('optical');
+        });
         if (cancelled) return;
 
         let selected = productId ? list.find((p) => p.id == productId) : null;
@@ -296,8 +301,13 @@ const VirtualTryOn = () => {
         if (!selected && productId) {
           try {
             const { data: single } = await api.get(`/products/${productId}`);
-            selected = single;
-            if (selected && !list.some((p) => p.id === selected.id)) list.push(selected);
+            if (single && single.category_name) {
+              const cat = single.category_name.toLowerCase();
+              if (cat.includes('sunglasses') || cat.includes('optical')) {
+                selected = single;
+                if (!list.some((p) => p.id === selected.id)) list.push(selected);
+              }
+            }
           } catch { /* product not found — fall through */ }
         }
 

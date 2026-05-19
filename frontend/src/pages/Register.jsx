@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
@@ -11,10 +11,70 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, login } = useAuth();
+  const { register, login, loginWithGoogle } = useAuth();
   const { showAlert } = useAlert();
-  const { settings } = useSettings();
+  const { settings, getImageUrl } = useSettings();
   const navigate = useNavigate();
+
+  const handleGoogleCredentialResponse = async (response) => {
+    try {
+      setIsSubmitting(true);
+      const userData = await loginWithGoogle(response.credential);
+      if (userData.role === 'admin') {
+        navigate('/admin');
+      } else {
+        showAlert(`Welcome, ${userData.name}`);
+        navigate('/');
+      }
+    } catch (err) {
+      console.error("Google login failed:", err);
+      showAlert(err.response?.data?.message || 'Google authentication failed.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    const scriptId = 'google-gsi-client-script';
+    let script = document.getElementById(scriptId);
+
+    const initializeGoogleSignIn = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '993342347692-p1rmgl10r4s2alrer892c7b08lfkr2bc.apps.googleusercontent.com',
+          callback: handleGoogleCredentialResponse,
+        });
+
+        const btnContainer = document.getElementById("google-signin-btn");
+        if (btnContainer) {
+          window.google.accounts.id.renderButton(
+            btnContainer,
+            { 
+              theme: "outline", 
+              size: "large", 
+              width: "100%", 
+              type: "standard",
+              text: "signup_with", // custom signup text for Register page!
+              shape: "rectangular",
+              logo_alignment: "center"
+            }
+          );
+        }
+      }
+    };
+
+    if (!script) {
+      script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogleSignIn;
+      document.body.appendChild(script);
+    } else {
+      initializeGoogleSignIn();
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,7 +105,13 @@ const Register = () => {
       <main className="min-h-screen flex overflow-hidden">
         {/* Brand Identity Fixed Anchor */}
         <div className="fixed top-8 left-8 z-50">
-          <Link to="/" className="font-display-lg text-headline-sm tracking-tighter text-on-surface uppercase">{settings.site_name}</Link>
+          <Link to="/" className="group block">
+            {settings.logo_type === 'image' && settings.site_logo_url ? (
+              <img src={getImageUrl(settings.site_logo_url)} alt={settings.site_name || 'Logo'} className="h-9 w-auto object-contain transition-transform duration-500 group-hover:scale-105" />
+            ) : (
+              <span className="font-display-lg text-headline-sm tracking-tighter text-on-surface uppercase group-hover:text-primary transition-colors">{settings.site_name}</span>
+            )}
+          </Link>
         </div>
 
         {/* Left Column: Split Screen Visual */}
@@ -137,6 +203,19 @@ const Register = () => {
                   {isSubmitting ? 'CREATING...' : 'CREATE ACCOUNT'}
                 </button>
               </form>
+
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10"></div>
+                </div>
+                <div className="relative flex justify-center text-label-caps">
+                  <span className="bg-surface-container-high px-4 text-on-surface/40">OR CONTINUE WITH</span>
+                </div>
+              </div>
+
+              <div className="flex justify-center">
+                <div id="google-signin-btn" className="w-full flex justify-center min-h-[46px]"></div>
+              </div>
             </div>
 
             <div className="text-center space-y-4">
@@ -154,7 +233,13 @@ const Register = () => {
 
       <footer className="w-full bg-surface-container-lowest border-t border-white/10">
         <div className="max-w-container-max mx-auto px-gutter py-12 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="font-display-lg text-headline-sm text-on-surface opacity-30 uppercase tracking-tighter">{settings.site_name}</div>
+          <div className="flex items-center gap-2">
+            {settings.logo_type === 'image' && settings.site_logo_url ? (
+              <img src={getImageUrl(settings.site_logo_url)} alt={settings.site_name || 'Logo'} className="h-8 object-contain brightness-0 invert opacity-45 hover:opacity-100 transition-opacity" />
+            ) : (
+              <div className="font-display-lg text-headline-sm text-on-surface opacity-30 uppercase tracking-tighter">{settings.site_name}</div>
+            )}
+          </div>
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-4">
             <Link className="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors uppercase" to="/shop">Collections</Link>
             <Link className="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors uppercase" to="/craftsmanship">Craftsmanship</Link>

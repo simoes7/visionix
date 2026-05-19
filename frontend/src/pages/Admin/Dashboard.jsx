@@ -9,6 +9,7 @@ import AdminProducts from './AdminProducts';
 import AdminOrders from './AdminOrders';
 import AdminCustomers from './AdminCustomers';
 import AdminSettings from './AdminSettings';
+import AdminContent from './AdminContent';
 
 const Dashboard = () => {
   const { theme, toggleTheme } = useTheme();
@@ -119,6 +120,7 @@ const Dashboard = () => {
     { id: 'products', label: 'Products', icon: 'inventory_2' },
     { id: 'orders', label: 'Orders', icon: 'shopping_cart' },
     { id: 'customers', label: 'Customers', icon: 'person' },
+    { id: 'content', label: 'Page Content', icon: 'auto_stories' },
     { id: 'reviews', label: 'Reviews', icon: 'rate_review' },
     { id: 'settings', label: 'Settings', icon: 'settings' },
   ];
@@ -494,7 +496,7 @@ const Dashboard = () => {
           {activeTab === 'products' && <AdminProducts />}
           {activeTab === 'orders' && <AdminOrders />}
           {activeTab === 'customers' && <AdminCustomers />}
-          {activeTab === 'notifications' && <AdminNotifications />}
+          {activeTab === 'content' && <AdminContent />}
           {activeTab === 'settings' && <AdminSettings />}
         </div>
 

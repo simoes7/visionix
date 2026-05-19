@@ -13,6 +13,7 @@ import orderRoutes   from './routes/orderRoutes.js';
 import adminRoutes   from './routes/adminRoutes.js';
 import frameRoutes   from './routes/frameRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
+import contentRoutes from './routes/contentRoutes.js';
 import errorMiddleware from './middleware/errorMiddleware.js';
 
 dotenv.config();
@@ -34,6 +35,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders',   orderRoutes);
 app.use('/api/admin',    adminRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/content', contentRoutes);
 app.use('/api/metadata', frameRoutes);
 
 // ── 404 handler ───────────────────────────────────────────
