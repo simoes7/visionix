@@ -1,0 +1,53 @@
+export const FRAME_STYLES = [
+  'Full-Rim',
+  'Semi-Rimless / Half-Rim',
+  'Rimless',
+  'Round',
+  'Square',
+  'Rectangle',
+  'Oval',
+  'Aviator',
+  'Cat-Eye',
+  'Geometric',
+  'Hexagonal',
+  'Browline',
+  'Wayfarer',
+  'Clubmaster',
+  'Oversized',
+  'Wraparound',
+  'Shield',
+  'Pilot',
+  'Butterfly',
+  'Navigator',
+  'Sport',
+  'Retro / Vintage',
+  'Transparent / Clear',
+  'Thick Frame',
+  'Thin Frame'
+];
+
+export const FRAME_MATERIALS = [
+  'Acetate',
+  'TR90',
+  'Plastic',
+  'Metal',
+  'Titanium',
+  'Stainless Steel',
+  'Aluminum',
+  'Memory Metal',
+  'Monel',
+  'Flexon',
+  'Carbon Fiber',
+  'Wood',
+  'Buffalo Horn',
+  'Bamboo',
+  'Nylon',
+  'Polycarbonate',
+  'Ultem',
+  'Gold',
+  'Silver',
+  'Mixed Material',
+  'Eco-Friendly / Recycled Materials'
+];
+
+export default { FRAME_STYLES, FRAME_MATERIALS };

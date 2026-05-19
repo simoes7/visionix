@@ -1,0 +1,11 @@
+ALTER TABLE settings
+  ADD COLUMN IF NOT EXISTS site_tagline VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS footer_text TEXT,
+  ADD COLUMN IF NOT EXISTS whatsapp_number VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS support_hours VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS social_instagram VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS social_twitter VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS logo_type VARCHAR(25) DEFAULT 'text',
+  ADD COLUMN IF NOT EXISTS site_logo_url VARCHAR(500);
+
+UPDATE settings SET logo_type = 'text' WHERE logo_type IS NULL;
